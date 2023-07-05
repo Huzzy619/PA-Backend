@@ -4,11 +4,12 @@ from django.contrib.auth import get_user_model
 from core.models import BaseUser, Assistant
 
 
-@receiver(post_save, get_user_model())
+@receiver(post_save, sender = get_user_model())
 def create_profiles(*args, **kwargs):
     if kwargs['created']:
         if kwargs['instance'].is_assistant:
-            Assistant.objects.create(user_ptr = kwargs['instance'])
+            Assistant.objects.create(user = kwargs['instance'])
         else:
-            BaseUser.objects.create(user_ptr = kwargs['instance'])
+            BaseUser.objects.create(user = kwargs['instance'])
 
+ 

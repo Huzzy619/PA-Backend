@@ -23,11 +23,12 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
 
-class BaseUser(User):
+class BaseUser(models.Model):
     location = models.TextField(null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 
-class Assistant(User):
+class Assistant(models.Model):
     IDENTITY = [
         ("NIN", "NIN"),
         ("Passport", "Passport"),
@@ -35,14 +36,16 @@ class Assistant(User):
     ]
 
     age = models.PositiveSmallIntegerField(null=True)
-    Bio = models.CharField(max_length=500, null=True)
-    passport = models.URLField(null=True) 
+    bio = models.CharField(max_length=500, null=True)
+    passport = models.URLField(null=True)
 
-    # TODO Would there be a list of services or just one
-    services = models.CharField(max_length=500, null=True)
+    services = models.JSONField(help_text="list of services", default=list)
     qualifications = models.CharField(max_length=500, null=True)
-    identity = models.CharField(max_length=500, choices=IDENTITY, null=True)
+    id_card = models.CharField(max_length=500, choices=IDENTITY, null=True)
+    id_card_number = models.CharField(max_length=200, null=True)
     height = models.PositiveSmallIntegerField(help_text="in centimeters", null=True)
     disability = models.BooleanField(default=False, null=True)
     allergy = models.CharField(max_length=200, null=True, blank=True)
-    experience = models.PositiveSmallIntegerField(null=True)
+    experience = models.PositiveSmallIntegerField(default=0)
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)

@@ -23,8 +23,8 @@ class TestRegister:
             "last_name":"test_last",
             "email": "user@example.com",
             "phone": "+2349066757334",
-            "address": "This is my address",
-            "password": "simple-password"
+            "password": "simple-password",
+            "is_assistant": True
          }
     
     def test_successful_registration_return_200(self, api_client):
@@ -33,6 +33,7 @@ class TestRegister:
          response = api_client.post(self.url, self.data)
 
          assert response.status_code == status.HTTP_201_CREATED
+         
     
     def test_user_already_exists_return_400(self, api_client, get_user):
 

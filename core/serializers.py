@@ -25,7 +25,6 @@ class RegisterSerializer(serializers.Serializer):
             last_name,
             email,
             phone,
-            address,
             password,
             is_assistant,
         ) = self.validated_data.values()
@@ -38,7 +37,6 @@ class RegisterSerializer(serializers.Serializer):
                 last_name=last_name,
                 email=email,
                 phone=phone,
-                address=address,
                 password=password,
                 is_assistant=is_assistant,
             )
@@ -56,11 +54,10 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class BaseUserSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField(read_only=True)
     class Meta:
         model = BaseUser
-        # fields = ["location", "user_ptr"]
-        exclude = ["user_ptr"]
-
+        fields = ["location", "user_id"]
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
@@ -74,8 +71,8 @@ class BaseUserSerializer(serializers.ModelSerializer):
 class AssistantSerializer(BaseUserSerializer):
     class Meta:
         model = Assistant
-        # fields = "__all__"
-        # exclude = ["user_ptr"]
+        fields = ["age", "bio", "passport", "services", "qualifications", "id_card", 
+                  "id_card_number", "height", "disability","allergy", "experience", "user_id" ]
 
 
 class ForgotPasswordSerializer(serializers.Serializer):

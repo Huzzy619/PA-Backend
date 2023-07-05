@@ -59,15 +59,13 @@ class ProfileView(GenericAPIView):
 
     def get_serializer_class(self):
         if self.request.user.is_assistant:
-            return BaseUserSerializer
-        return AssistantSerializer
+            return AssistantSerializer
+        return BaseUserSerializer
 
     def get_instance(self):
-        if self.request.user.is_assistant:
-            instance = get_object_or_404(Assistant, user_ptr=self.request.user)
+        Model = Assistant if self.request.user.is_assistant else BaseUser
 
-        else:
-            instance = get_object_or_404(BaseUser, user_ptr=self.request.user)
+        instance = get_object_or_404(Model, user=self.request.user)
 
         return instance
 
@@ -75,7 +73,6 @@ class ProfileView(GenericAPIView):
         serializer = self.get_serializer(self.get_instance())
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
     def put(self, request):
         serializer = self.get_serializer(self.get_instance(), data=request.data)
@@ -101,7 +98,6 @@ class ForgotPasswordView(GenericAPIView):
             domain = config("FRONTEND_URL", request.get_host())
             token = default_token_generator.make_token(user)
 
-            print(uid, token)
             link = f"{request.scheme}://{domain}/account/reset/password/confirm/{uid}/{token}"
 
             send_mail(
@@ -111,16 +107,16 @@ class ForgotPasswordView(GenericAPIView):
                 from_email="admin@studebt.com",
             )
             return Response(
-                {"message": "email containing link to reset password has been sent"},
+                {"message": "email containing link to reset password has been sent",
+                  "status": True},
                 status=status.HTTP_200_OK,
             )
         except get_user_model().DoesNotExist:
-            pass
-            # When No user is found, just ignore
-        return Response(
+             return Response(
             {"message": "User not found.", "status": False},
             status=status.HTTP_404_NOT_FOUND,
         )
+       
 
 
 class PasswordResetConfirm(GenericAPIView):
