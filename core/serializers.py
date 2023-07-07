@@ -149,3 +149,9 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
         )
 
         return register_social_user(email, first_name, last_name)
+
+
+
+class OTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)

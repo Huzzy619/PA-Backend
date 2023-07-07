@@ -17,5 +17,7 @@ urlpatterns = [
         views.PasswordResetConfirm.as_view(),
         name="password-reset-confirm",
     ),
-    path("profile", views.ProfileView.as_view(), name="profile")
+    path("profile", views.ProfileView.as_view(), name="profile"),
+    path("otp/send/<str:email>", views.GetOTPView.as_view()),
+    path("otp/verify", views.VerifyOTPView.as_view()),
 ]

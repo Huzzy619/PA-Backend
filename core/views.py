@@ -17,12 +17,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .models import Assistant, BaseUser
+from .otp import OTPGenerator
 from .serializers import (
     AssistantSerializer,
     BaseUserSerializer,
     ForgotPasswordSerializer,
     GoogleSocialAuthSerializer,
     LoginSerializer,
+    OTPSerializer,
     PasswordResetSerializer,
     PasswordUpdateSerializer,
     RegisterSerializer,
@@ -107,16 +109,17 @@ class ForgotPasswordView(GenericAPIView):
                 from_email="admin@studebt.com",
             )
             return Response(
-                {"message": "email containing link to reset password has been sent",
-                  "status": True},
+                {
+                    "message": "email containing link to reset password has been sent",
+                    "status": True,
+                },
                 status=status.HTTP_200_OK,
             )
         except get_user_model().DoesNotExist:
-             return Response(
-            {"message": "User not found.", "status": False},
-            status=status.HTTP_404_NOT_FOUND,
-        )
-       
+            return Response(
+                {"message": "User not found.", "status": False},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
 
 class PasswordResetConfirm(GenericAPIView):
@@ -314,4 +317,81 @@ class RefreshView(TokenRefreshView):
             return Response(
                 {"error": "Token is invalid or expired"},
                 status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+
+class GetOTPView(GenericAPIView):
+    """
+    Call this endpoint with a registered email to get OTP
+
+    Args:
+        Email
+
+    Returns:
+        OTP: For 2 Factor Authentication and to complete registration
+    """
+
+    serializer_class = OTPSerializer
+
+    def get(self, request, email):
+        try:
+            user = get_user_model().objects.get(email=email)
+        except get_user_model().DoesNotExist:
+            return Response(
+                {"status": False, "message": "No user with the provided email"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        otp = OTPGenerator(user_id=user.id).get_otp()
+
+        return Response(
+            {"message": f"OTP sent to the provided email {otp}", "status": True},
+            status=status.HTTP_200_OK,
+        )
+
+
+class VerifyOTPView(GenericAPIView):
+    """
+    Verify OTP against the provided email
+
+    Args:
+        otp (string)
+        email (user_email)
+
+    Returns:
+        message: success/failure
+    """
+
+    serializer_class = OTPSerializer
+
+    def post(self, request):
+        serializer = OTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(
+            get_user_model(), email=serializer.validated_data["email"]
+        )
+        otp_gen = OTPGenerator(user_id=user.id)
+
+        check = otp_gen.check_otp(serializer.validated_data["otp"])
+
+        if check == "passed":
+            # Mark user as verified
+            if not user.is_verified:
+                user.is_verified = True
+                user.save()
+
+            return Response(
+                {"message": "2FA successfully completed", "status": True},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        elif check == "expired":
+            return Response(
+                {
+                    "message": "OTP is expired",
+                },
+                status=status.HTTP_406_NOT_ACCEPTABLE,
+            )
+        else:
+            return Response(
+                {"message": "Invalid otp"}, status=status.HTTP_403_FORBIDDEN
             )

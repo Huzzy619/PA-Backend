@@ -49,3 +49,10 @@ class Assistant(models.Model):
     experience = models.PositiveSmallIntegerField(default=0)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+
+
+class OTP(models.Model):
+    counter = models.IntegerField(default=1)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    time_created = models.TimeField(auto_now=True)
