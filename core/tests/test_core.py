@@ -31,8 +31,11 @@ class TestRegister:
          
          
          response = api_client.post(self.url, self.data)
+        
+         print(response.json())
 
          assert response.status_code == status.HTTP_201_CREATED
+         assert False
          
     
     def test_user_already_exists_return_400(self, api_client, get_user):

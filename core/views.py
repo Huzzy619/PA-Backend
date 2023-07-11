@@ -44,7 +44,15 @@ class RegisterView(GenericAPIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            return Response(
+                {
+                    "error": list(e), 
+                    "status": False
+                }
+            )
         serializer.save()
 
         return Response(

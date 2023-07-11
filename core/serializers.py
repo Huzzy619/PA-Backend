@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model, password_validation
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from rest_framework import serializers
-
+from rest_framework.response import Response
 from .models import Assistant, BaseUser
 from .utils import Google, register_social_user
 
@@ -19,6 +19,17 @@ class RegisterSerializer(serializers.Serializer):
     password = serializers.CharField()
     is_assistant = serializers.BooleanField(default=False)
 
+    def validate(self, attrs):
+        if get_user_model().objects.filter(email = attrs["email"]):
+            raise serializers.ValidationError(
+                detail={
+                    "error": "User with provided credentials already exists",
+                    "status": False,
+                }
+            )
+        password_validation.validate_password(attrs['password'])
+        return super().validate(attrs)
+
     def save(self, **kwargs):
         (
             first_name,
@@ -29,26 +40,31 @@ class RegisterSerializer(serializers.Serializer):
             is_assistant,
         ) = self.validated_data.values()
 
-        try:
-            password_validation.validate_password(password)
+        # try:
 
-            user = get_user_model().objects._create_user(
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                phone=phone,
-                password=password,
-                is_assistant=is_assistant,
-            )
-        except IntegrityError:
-            raise serializers.ValidationError(
-                detail={
-                    "message": "User with provided credentials already exists",
-                    "status": False,
-                }
-            )
-        except ValidationError as e:
-            raise serializers.ValidationError(detail=e.messages)
+        user = get_user_model().objects._create_user(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+            password=password,
+            is_assistant=is_assistant,
+        )
+        # except IntegrityError:
+        #     # return Response(
+        #     #     data={
+        #     #         "message": "User with provided credentials already exists",
+        #     #         "status": False,
+        #     #     }
+        #     # )
+        #     raise serializers.ValidationError(
+        #         detail={
+        #             "message": "User with provided credentials already exists",
+        #             "status": False,
+        #         }
+        #     )
+        # except ValidationError as e:
+        #     raise serializers.ValidationError(detail=e.messages)
 
         return user
 
