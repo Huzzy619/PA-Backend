@@ -43,13 +43,16 @@ class Assistant(models.Model):
     qualifications = models.CharField(max_length=500, null=True)
     id_card = models.CharField(max_length=500, choices=IDENTITY, null=True)
     id_card_number = models.CharField(max_length=200, null=True)
-    height = models.PositiveSmallIntegerField(help_text="in centimeters", null=True)
-    disability = models.BooleanField(default=False, null=True)
-    allergy = models.CharField(max_length=200, null=True, blank=True)
+    # height = models.PositiveSmallIntegerField(help_text="in centimeters", null=True)
+    # disability = models.BooleanField(default=False, null=True)
+    # allergy = models.CharField(max_length=200, null=True, blank=True)
     experience = models.PositiveSmallIntegerField(default=0)
+    resume = models.URLField(null=True)
+    website = models.URLField(null=True)
+    linked_in = models.URLField(null=True)
+    professional_headline = models.CharField(max_length=500, null=True)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
 
 
 class OTP(models.Model):

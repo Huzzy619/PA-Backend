@@ -47,12 +47,7 @@ class RegisterView(GenericAPIView):
         try:
             serializer.is_valid(raise_exception=True)
         except ValidationError as e:
-            return Response(
-                {
-                    "error": list(e), 
-                    "status": False
-                }
-            )
+            return Response({"error": list(e), "status": False})
         serializer.save()
 
         return Response(

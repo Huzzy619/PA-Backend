@@ -28,6 +28,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("core.urls")),
+    path("payments/", include("payments.urls")),
     path("__debug__/", include("debug_toolbar.urls")), 
 ]
 
